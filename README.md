@@ -2,6 +2,8 @@
 # 模块说明
 无线模块使用的是esp8286 相当于esp8266 + 内置1MB Flash
 # 信号说明
+![screenshot](https://github.com/wuxx/smart_switch_hack/blob/master/doc/pcb.jpg)
+
 左上方6个孔为下载口，从左到右依次为：  
 1 3.3V  
 2 EXT_RSTB  
