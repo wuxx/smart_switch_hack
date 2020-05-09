@@ -1,0 +1,1 @@
+# smart_switch_hack
