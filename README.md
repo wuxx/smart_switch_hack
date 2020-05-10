@@ -17,18 +17,20 @@
 板子上有两个LED，一个继电器，一个按键，经过检测，说明如下
 
 ## 按键
-按键一端接地，另一端直接接的GPIO0
+按键一端接地，另一端接GPIO0
+GPIO0 - KEY - GND
+
 
 ## LED1
-靠近直插电容的LED
+靠近直插电容的LED  
 GPIO12 - 电阻- LED - GND  
 同时还接了继电器  
 GPIO12 - 电阻4.7K - 三极管J3（S8050）B级 - 继电器  
 
 
 ## LED2
-靠近天线的LED
-GPIO13  - LED - 电阻561 - 3.3V
+靠近天线的LED  
+GPIO13 - LED - 电阻561 - 3.3V
 
 # 烧录命令
 `cd image && ./flash_write_esp8285.sh`  
@@ -45,9 +47,8 @@ GPIO13  - LED - 电阻561 - 3.3V
 可自行焊接上插针烧录，也可以直接使用探针夹烧录，无需焊接  
 ![flash](https://github.com/wuxx/smart_switch_hack/blob/master/doc/flash.jpg)
 
-
 # 源码
-源码基于[esp-link](https://github.com/jeelabs/esp-link)，patch位于src目录下，目前实现为直接http请求，暂无UI。
+源码基于[esp-link](https://github.com/jeelabs/esp-link)，patch位于src目录下，目前实现为直接http请求，暂无UI实现。
 
 # TODO
 - UI实现
