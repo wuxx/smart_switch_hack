@@ -1,6 +1,6 @@
 # smart_switch_hack
 # 模块说明
-无线模块使用的是esp8286 相当于esp8266 + 内置1MB Flash
+无线模块使用的是esp8285 相当于esp8266 + 内置1MB Flash
 # 信号说明
 ![screenshot](https://github.com/wuxx/smart_switch_hack/blob/master/doc/pcb.jpg)
 
@@ -13,21 +13,21 @@
 6 GND  
 
 # 电路说明
-板子上有两个LED，一个继电器，一个按键，经过万用表检测，说明如下
+板子上有两个LED，一个继电器，一个按键，经过检测，说明如下
 
 ## 按键
-按键一端接地，另一端直接接的gpio0
+按键一端接地，另一端直接接的GPIO0
 
 ## LED1
-靠近直插电容那个灯那里  
-GPIO12 - 接电阻- led - gnd  
+靠近直插电容的LED
+GPIO12 - 电阻- LED - GND  
 同时还接了继电器  
 GPIO12 - 电阻4.7K - 三极管J3（S8050）B级 - 继电器  
 
 
 ## LED2
-靠天线的led
-GPIO13  - led - 电阻561 - 3.3V
+靠近天线的LED
+GPIO13  - LED - 电阻561 - 3.3V
 
 # 烧录命令
 `cd image`  
@@ -39,7 +39,7 @@ GPIO13  - led - 电阻561 - 3.3V
 `curl -X POST http://192.168.31.153/gpio?gpio12=1`
 
 # 何处购买智能开关
-无利益相关，请自行搜索 米家天猫小度智能音箱语音控制WiFi智能插座国标5孔智能远程定时
+请自行搜索 米家天猫小度智能音箱语音控制WiFi智能插座国标5孔智能远程定时
 
 # 免责声明
 智能开关破解及使用涉及220V市电，具有一定危险性，本人仅提供技术思路，风险自担。
