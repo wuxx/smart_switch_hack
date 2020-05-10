@@ -1,0 +1,150 @@
+diff --git a/esp-link/cgipins.c b/esp-link/cgipins.c
+index b763d12..594b1e3 100644
+--- a/esp-link/cgipins.c
++++ b/esp-link/cgipins.c
+@@ -41,6 +41,21 @@ int ICACHE_FLASH_ATTR cgiPinsGet(HttpdConnData *connData) {
+   return HTTPD_CGI_DONE;
+ }
+ 
++int ICACHE_FLASH_ATTR cgiGPIOGet(HttpdConnData *connData) {
++  if (connData->conn==NULL) return HTTPD_CGI_DONE; // Connection aborted
++
++  char buff[1024];
++  int len;
++
++  len = os_sprintf(buff,
++      "{ \"gpio12\":%d, \"gpio13\":%d}", 
++      GPIO_INPUT_GET(GPIO_ID_PIN(12)),  GPIO_INPUT_GET(GPIO_ID_PIN(13)));
++
++  jsonHeader(connData, 200);
++  httpdSend(connData, buff, len);
++  return HTTPD_CGI_DONE;
++}
++
+ // Cgi to change choice of pin assignments
+ int ICACHE_FLASH_ATTR cgiPinsSet(HttpdConnData *connData) {
+   if (connData->conn==NULL) {
+@@ -118,6 +133,44 @@ collision: {
+   }
+ }
+ 
++int ICACHE_FLASH_ATTR cgiGPIOSet(HttpdConnData *connData) {
++  if (connData->conn==NULL) {
++    return HTTPD_CGI_DONE; // Connection aborted
++  }
++
++  int8_t ok = 0;
++  int8_t b12 = -1, b13 = -1;
++  ok |= getInt8Arg(connData, "gpio12", &b12);
++  ok |= getInt8Arg(connData, "gpio13", &b13);
++  if (ok < 0) return HTTPD_CGI_DONE;
++
++  if (ok > 0) {
++      os_printf("gpio set: gpio12=%d gpio13=%d \n", b12, b13);
++      if (b12 != -1) {
++          if (b12) {
++              gpio_output_set((1<<12), 0, (1<<12), 0);
++          } else {
++              gpio_output_set(0, (1<<12), (1<<12), 0);
++          }
++
++      }
++
++      if (b13 != -1) {
++          if (b13) {
++              gpio_output_set((1<<13), 0, (1<<13), 0);
++          } else {
++              gpio_output_set(0, (1<<13), (1<<13), 0);
++          }
++
++      }
++
++      httpdStartResponse(connData, 204);
++      httpdEndHeaders(connData);
++  }
++  return HTTPD_CGI_DONE;
++}
++
++
+ int ICACHE_FLASH_ATTR cgiPins(HttpdConnData *connData) {
+   if (connData->conn==NULL) return HTTPD_CGI_DONE; // Connection aborted. Clean up.
+   if (connData->requestType == HTTPD_METHOD_GET) {
+@@ -129,3 +182,15 @@ int ICACHE_FLASH_ATTR cgiPins(HttpdConnData *connData) {
+     return HTTPD_CGI_DONE;
+   }
+ }
++
++int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData) {
++  if (connData->conn==NULL) return HTTPD_CGI_DONE; // Connection aborted. Clean up.
++  if (connData->requestType == HTTPD_METHOD_GET) {
++    return cgiGPIOGet(connData);
++  } else if (connData->requestType == HTTPD_METHOD_POST) {
++    return cgiGPIOSet(connData);
++  } else {
++    jsonHeader(connData, 404);
++    return HTTPD_CGI_DONE;
++  }
++}
+diff --git a/esp-link/main.c b/esp-link/main.c
+index d2a316e..828928b 100644
+--- a/esp-link/main.c
++++ b/esp-link/main.c
+@@ -67,6 +67,9 @@ handled top-down, so make sure to put more specific rules above the more
+ general ones. Authorization things (like authBasic) act as a 'barrier' and
+ should be placed above the URLs they protect.
+ */
++
++extern int ICACHE_FLASH_ATTR cgiGPIO(HttpdConnData *connData);
++
+ HttpdBuiltInUrl builtInUrls[] = {
+   { "/", cgiRedirect, "/home.html" },
+   { "/menu", cgiMenu, NULL },
+@@ -108,6 +111,7 @@ HttpdBuiltInUrl builtInUrls[] = {
+   { "/services/info", cgiServicesInfo, NULL },
+   { "/services/update", cgiServicesSet, NULL },
+   { "/pins", cgiPins, NULL },
++  { "/gpio", cgiGPIO, NULL },
+ #ifdef MQTT
+   { "/mqtt", cgiMqtt, NULL },
+ #endif
+@@ -158,6 +162,29 @@ user_rf_cal_sector_set(void) {
+   return sect;
+ }
+ 
++#define GPIO_RELAY  (12)
++#define GPIO_LED    (13)
++
++void ICACHE_FLASH_ATTR relay_on()
++{
++    gpio_output_set(0, (1<<GPIO_RELAY), (1<<GPIO_RELAY), 0);
++}
++
++void ICACHE_FLASH_ATTR relay_off()
++{
++    gpio_output_set((1<<GPIO_RELAY), 0, (1<<GPIO_RELAY), 0);
++}
++
++void ICACHE_FLASH_ATTR led_on()
++{
++    gpio_output_set(0, (1<<GPIO_LED), (1<<GPIO_LED), 0);
++}
++
++void ICACHE_FLASH_ATTR led_off()
++{
++    gpio_output_set((1<<GPIO_LED), 0, (1<<GPIO_LED), 0);
++}
++
+ // Main routine to initialize esp-link.
+ void ICACHE_FLASH_ATTR
+ user_init(void) {
+@@ -181,6 +208,10 @@ user_init(void) {
+   os_printf("Flash config restore %s\n", restoreOk ? "ok" : "*FAILED*");
+   // Status LEDs
+   statusInit();
++
++  makeGpio(GPIO_RELAY); /* relay & led1 */
++  makeGpio(GPIO_LED);   /* led2 */
++
+   serledInit();
+   // Wifi
+   wifiInit();
