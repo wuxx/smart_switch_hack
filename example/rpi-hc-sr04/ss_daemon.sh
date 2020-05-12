@@ -6,9 +6,10 @@
 HOST=192.168.31.153
 
 #50cm
-TH=50
+TH=100
 
-DISTANCE=0
+DISTANCE_CURR=0
+DISTANCE_PREV=0
 #under threshold
 NEAR_COUNT=0
 #beyond threshold
@@ -21,7 +22,7 @@ RELAY_STATUS=0
 #10min = 600s
 RELAY_ON_COUNT=0
 #RELAY_ON_HOLD_COUNT=1200
-RELAY_ON_HOLD_COUNT=100
+RELAY_ON_HOLD_COUNT=200
 
 RELAY_ON=
 RELAY_OFF=
@@ -33,10 +34,10 @@ CURRENT_DIR=$(cd $(dirname $0); pwd)
 
 while [ 1 ]; do
 
-    DISTANCE=$(${CURRENT_DIR}/main | awk '{print $3}')
-    echo "DISTANCE: ${DISTANCE}"
+    DISTANCE_CURR=$(${CURRENT_DIR}/main | awk '{print $3}')
+    echo "DISTANCE_CURR: ${DISTANCE_CURR}"
 
-    if [ ${DISTANCE} -lt ${TH} ]; then
+    if [ ${DISTANCE_CURR} -lt ${TH} ]; then
         echo "near"
         FAR_COUNT=0
         NEAR_COUNT=$[$NEAR_COUNT+1]
@@ -49,13 +50,12 @@ while [ 1 ]; do
                 echo "open the relay"
                 #RELAY ON
                 #TODO: get the gpio status to ensure op succ
-                curl -X POST "http://${HOST}/gpio?&gpio12=1"
+                timeout 30 curl -X POST "http://${HOST}/gpio?&gpio12=1"
 
                 RELAY_STATUS=1
             fi
 
         fi
-
 
     else
         echo "far"
@@ -67,7 +67,7 @@ while [ 1 ]; do
                 echo "close the relay"
                 #RELAY OFF
                 #TODO: get the gpio status to ensure op succ
-                curl -X POST "http://${HOST}/gpio?&gpio12=0"
+                timeout 30 curl -X POST "http://${HOST}/gpio?&gpio12=0"
 
                 RELAY_STATUS=0
             fi
@@ -78,8 +78,8 @@ while [ 1 ]; do
 
 
     fi
+    DISTANCE_PREV=${DISTANCE_CURR}
 
-    sleep 0.5
     sleep 0.5
 
 done
