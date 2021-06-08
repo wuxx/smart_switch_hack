@@ -5,11 +5,15 @@
 #HOST=esp-link.local
 HOST=192.168.31.153
 
+LED_GPIO=2
+gpio mode $LED_GPIO out
+gpio write $LED_GPIO 1
+
 #50cm
 #TH=40
 #TH=50
-TH=80
-#TH=100
+#TH=80
+DIST_TH=100
 
 DISTANCE_CURR=0
 DISTANCE_PREV_1=0
@@ -17,6 +21,8 @@ DISTANCE_PREV_2=0
 DISTANCE=0
 #under threshold
 NEAR_COUNT=0
+NEAR_COUNT_TH=2
+
 #beyond threshold
 FAR_COUNT=0
 
@@ -26,10 +32,7 @@ RELAY_STATUS=0
 
 #10min = 600s
 RELAY_ON_COUNT=0
-RELAY_ON_HOLD_COUNT=1600
-#RELAY_ON_HOLD_COUNT=1200
-#RELAY_ON_HOLD_COUNT=400
-#RELAY_ON_HOLD_COUNT=800
+RELAY_ON_HOLD_COUNT=800
 
 RELAY_ON=
 RELAY_OFF=
@@ -45,18 +48,27 @@ echo "INIT RELAY_STATUS: $RELAY_STATUS"
 
 while [ 1 ]; do
 
-    DISTANCE_CURR=$(timeout 10 ${CURRENT_DIR}/main | awk '{print $3}')
+    HOUR=$(date +%H)
+    echo "HOUR: ${HOUR}"
+    if [ $HOUR -gt 0 ] && [ $HOUR -lt 8 ]; then
+        echo "sleep 1 hour"
+        sleep 3600
+    fi
+
+    DISTANCE_CURR=$(timeout 10 ${CURRENT_DIR}/get_dist.sh)
     echo "DISTANCE_PREV_2: ${DISTANCE_PREV_2}"
     echo "DISTANCE_PREV_1: ${DISTANCE_PREV_1}"
     echo "DISTANCE_CURR:   ${DISTANCE_CURR}"
-    if [ ${DISTANCE_PREV_2} -lt ${TH} ] && [ ${DISTANCE_PREV_1} -lt ${TH} ] && [ ${DISTANCE_CURR} -lt ${TH} ]; then
+    if [ ${DISTANCE_PREV_2} -lt ${DIST_TH} ] && [ ${DISTANCE_PREV_1} -lt ${DIST_TH} ] && [ ${DISTANCE_CURR} -lt ${DIST_TH} ]; then
     #if [ ${DISTANCE} -lt ${TH} ]; then
         echo "-- near --"
+        gpio write $LED_GPIO 0
+
         FAR_COUNT=0
         NEAR_COUNT=$[$NEAR_COUNT+1]
         echo "NEAR_COUNT: ${NEAR_COUNT}"
 
-        if [ ${NEAR_COUNT} -gt 4 ]; then
+        if [ ${NEAR_COUNT} -gt ${NEAR_COUNT_TH} ]; then
 
             if [ ${RELAY_STATUS} -eq 0 ]; then
 
@@ -72,6 +84,7 @@ while [ 1 ]; do
 
     else
         echo "-- far --"
+        gpio write $LED_GPIO 1
         NEAR_COUNT=0
         if [ ${RELAY_STATUS} -eq 1 ]; then
             FAR_COUNT=$[$FAR_COUNT+1]
