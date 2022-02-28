@@ -4,7 +4,8 @@ set -o errexit
 
 
 #SERIAL_PORT=/dev/ttyS0
-SERIAL_PORT=/dev/ttyUSB0
+#SERIAL_PORT=/dev/ttyUSB0
+SERIAL_PORT=/dev/ttyACM0
 
 #BAUDRATE=115200
 BAUDRATE=460800

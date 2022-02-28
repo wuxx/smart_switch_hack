@@ -5,7 +5,8 @@ set -o errexit
 IMAGE_DIR=esp-link-v3.0.14-g963ffbb
 
 #SERIAL_PORT=/dev/ttyS0
-SERIAL_PORT=/dev/ttyUSB0
+#SERIAL_PORT=/dev/ttyUSB0
+SERIAL_PORT=/dev/ttyACM0
 
 #BAUDRATE=115200
 BAUDRATE=460800
