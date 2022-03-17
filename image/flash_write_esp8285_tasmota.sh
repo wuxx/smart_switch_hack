@@ -15,20 +15,18 @@ BAUDRATE=460800
 #esptool.py --port ${SERIAL_PORT} --baud ${BAUDRATE} erase_flash
 #exit 0
 
-#esptool.py --port ${SERIAL_PORT} \
-#    --baud ${BAUDRATE} write_flash \
-#    -fs 1MB -ff 80m -fm dout \
-#    0x00000  boot_v1.7.bin \
-#    0x01000  user1.bin \
-#    0xFC000 $IMAGE_DIR/esp_init_data_default.bin \
-#    0xFE000 $IMAGE_DIR/blank.bin
-#exit 0
+#8Mbit/1MByte
+esptool.py --port ${SERIAL_PORT} \
+    --baud ${BAUDRATE} write_flash \
+    -fs 1MB -ff 80m -fm dout \
+    0x00000 tasmota.bin
+exit 0
 
-#32Mbit/4MByte
+#8Mbit/1MByte
 esptool.py --port ${SERIAL_PORT} \
         --baud ${BAUDRATE} write_flash \
-        -fs 4MB -ff 80m  \
+        -fs 1MB -ff 40m -fm dout \
         0x00000  $IMAGE_DIR/boot_v1.6.bin \
         0x01000  user1.bin \
-        0x3FC000 $IMAGE_DIR/esp_init_data_default.bin \
-        0x3FE000 $IMAGE_DIR/blank.bin
+        0xFC000 $IMAGE_DIR/esp_init_data_default.bin \
+        0xFE000 $IMAGE_DIR/blank.bin

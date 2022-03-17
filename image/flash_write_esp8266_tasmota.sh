@@ -28,7 +28,4 @@ BAUDRATE=460800
 esptool.py --port ${SERIAL_PORT} \
         --baud ${BAUDRATE} write_flash \
         -fs 4MB -ff 80m  \
-        0x00000  $IMAGE_DIR/boot_v1.6.bin \
-        0x01000  user1.bin \
-        0x3FC000 $IMAGE_DIR/esp_init_data_default.bin \
-        0x3FE000 $IMAGE_DIR/blank.bin
+        0x00000  firmware.bin #tasmota.bin
