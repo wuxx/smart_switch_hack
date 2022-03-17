@@ -24,6 +24,7 @@ DIST_TH=100
 DISTANCE_CURR=0
 DISTANCE_PREV_1=0
 DISTANCE_PREV_2=0
+DISTANCE_PREV_3=0
 DISTANCE=0
 #under threshold
 NEAR_COUNT=0
@@ -38,7 +39,7 @@ RELAY_STATUS=0
 
 #10min = 600s
 RELAY_ON_COUNT=0
-RELAY_ON_HOLD_COUNT=800
+RELAY_ON_HOLD_COUNT=600
 
 RELAY_ON=
 RELAY_OFF=
@@ -55,17 +56,19 @@ echo "INIT RELAY_STATUS: $RELAY_STATUS"
 while [ 1 ]; do
 
     HOUR=$(date +%H)
-    echo "HOUR: ${HOUR}"
+    echo "DATE: [$(date)]"
+    #echo "HOUR: [${HOUR}]"
     if [ $HOUR -gt 0 ] && [ $HOUR -lt 8 ]; then
         echo "sleep 1 hour"
         sleep 3600
     fi
 
     DISTANCE_CURR=$(timeout 10 ${CURRENT_DIR}/get_dist.sh)
+    echo "DISTANCE_PREV_3: ${DISTANCE_PREV_3}"
     echo "DISTANCE_PREV_2: ${DISTANCE_PREV_2}"
     echo "DISTANCE_PREV_1: ${DISTANCE_PREV_1}"
     echo "DISTANCE_CURR:   ${DISTANCE_CURR}"
-    if [ ${DISTANCE_PREV_2} -lt ${DIST_TH} ] && [ ${DISTANCE_PREV_1} -lt ${DIST_TH} ] && [ ${DISTANCE_CURR} -lt ${DIST_TH} ]; then
+    if [ ${DISTANCE_PREV_3} -lt ${DIST_TH} ] && [ ${DISTANCE_PREV_2} -lt ${DIST_TH} ] && [ ${DISTANCE_PREV_1} -lt ${DIST_TH} ] && [ ${DISTANCE_CURR} -lt ${DIST_TH} ]; then
     #if [ ${DISTANCE} -lt ${TH} ]; then
         echo "-- near --"
         gpio write $LED_GPIO 0
@@ -110,10 +113,11 @@ while [ 1 ]; do
 
 
     fi
+    DISTANCE_PREV_3=${DISTANCE_PREV_2}
     DISTANCE_PREV_2=${DISTANCE_PREV_1}
     DISTANCE_PREV_1=${DISTANCE_CURR}
 
-    sleep 0.5
+    sleep 1.5
 
 done
 
