@@ -14,10 +14,13 @@ all:
 	$(CC) main.c $(ROOT)/locallib/lib/libwiringPi.a -lpthread -o main
 
 switch_on: 
-	curl http://192.168.123.171/cm?cmnd=POWER+ON
+	curl http://$(HOST)/cm?cmnd=POWER+ON
 
 switch_off: 
-	curl http://192.168.123.171/cm?cmnd=POWER+OFF
+	curl http://$(HOST)/cm?cmnd=POWER+OFF
+
+switch_status: 
+	curl http://$(HOST)/cm?cmnd=POWER
 
 clean:	
 	-rm -f *.o
